@@ -6,21 +6,21 @@ import writer.SwiftWriter
 import writer.XmlWriter
 import java.io.File
 
-fun main(args: Array<String>) = runBlocking {
-    val semantics = JsonReader.read(
-        "/Users/valerii/Documents/Developer/FigmaVar/FigmaVar/src/main/resources/semantic_color.json"
-    )
-    val primitives = JsonReader.read(
-        "/Users/valerii/Documents/Developer/FigmaVar/FigmaVar/src/main/resources/primitive_color.json"
-    )
-    val output = File("/Users/valerii/Documents/Developer/FigmaVar/FigmaVar/src/main/resources")
+fun main() = runBlocking {
+    runSample()
+}
+
+private suspend fun runSample() {
+    val semantics = JsonReader.read("src/main/resources/sample_semantic_color.json")
+    val primitives = JsonReader.read("src/main/resources/sample_primitive_color.json")
+    val output = File("src/main/resources")
 
     val semanticCollection = JsonParser.parse(semantics)
     val primitiveCollection = JsonParser.parse(primitives)
-    val interceptor = DefaultCollectionInterceptor()
+    val factory = OutputCollectionFactory()
 
     // XML
-    val xmlCollections = interceptor.intercept(
+    val xmlCollections = factory.create(
         nameConverters = mapOf(
             primitiveCollection.id to XmlPrimitiveNameConverter(),
             semanticCollection.id to XMLSemanticNameConverter()
@@ -40,7 +40,7 @@ fun main(args: Array<String>) = runBlocking {
     )
 
     // Swift
-    val swiftCollections = interceptor.intercept(
+    val swiftCollections = factory.create(
         nameConverters = mapOf(
             primitiveCollection.id to SwiftPrimitiveNameConverter(),
             semanticCollection.id to SwiftSemanticNameConverter()

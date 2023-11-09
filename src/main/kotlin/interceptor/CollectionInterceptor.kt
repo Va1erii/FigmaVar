@@ -2,17 +2,10 @@ package interceptor
 
 import model.Collection
 
-interface CollectionInterceptor {
-    fun intercept(
-        nameConverters: Map<String, NameConverter>,
-        vararg collections: Collection
-    ): List<Collection>
-}
-
-class DefaultCollectionInterceptor : CollectionInterceptor {
+class OutputCollectionFactory {
     private val validator = CollectionValidator()
     private val aliasConnector = AliasConnector()
-    override fun intercept(
+    fun create(
         nameConverters: Map<String, NameConverter>,
         vararg collections: Collection
     ): List<Collection> {
