@@ -6,17 +6,17 @@ import kotlinx.coroutines.withContext
 import model.Collection
 import model.Mode
 import model.VariableValue
-import model.VariableValue.Rgba
 import java.io.File
 import java.io.Writer
 import java.util.*
 import kotlin.math.roundToInt
 
-data class XmlOutput(
-    val name: String, val value: String
+data class ComposeOutput(
+    val name: String,
+    val value: String,
 )
 
-object XmlWriter {
+object ComposeWriter {
     suspend fun write(
         outputDirectory: File,
         collection: Collection
@@ -25,23 +25,23 @@ object XmlWriter {
             if (!outputDirectory.isDirectory) {
                 throw IllegalArgumentException("Output is not a directory: $outputDirectory")
             }
-            val variablesByMode = HashMap<Mode, SortedSet<XmlOutput>>()
+            val variablesByMode = HashMap<Mode, SortedSet<ComposeOutput>>()
             collection.variables.forEach { variable ->
                 variable.valuesByMode.forEach { valueEntry ->
                     variablesByMode.compute(valueEntry.key) { _, values ->
-                        val set = TreeSet<XmlOutput>(Comparator.comparing { it.name })
+                        val set = TreeSet<ComposeOutput>(Comparator.comparing { it.name })
                         values?.let { set.addAll(it) }
                         set.add(
-                            XmlOutput(
+                            ComposeOutput(
                                 name = variable.name,
                                 value = when (val value = valueEntry.value) {
                                     is VariableValue.Alias -> throw IllegalStateException("Variable is not resolved")
                                     is VariableValue.ResolvedVariable -> {
-                                        "@color/${value.variable.name}"
+                                        value.variable.name
                                     }
 
-                                    is Rgba -> value.toAndroidHex()
-                                }
+                                    is VariableValue.Rgba -> value.toComposeColor()
+                                },
                             )
                         )
                         set
@@ -49,7 +49,7 @@ object XmlWriter {
                 }
             }
             variablesByMode.forEach { (mode, variables) ->
-                with(File(outputDirectory, "${mode.name.lowercase()}.xml")) {
+                with(File(outputDirectory, "${mode.name.lowercase()}.kt")) {
                     writer().use { writer ->
                         clear()
                         writer.writeHeader()
@@ -62,35 +62,26 @@ object XmlWriter {
     }
 
     private fun Writer.writeHeader() {
-        write(
-            """
-            <?xml version="1.0" encoding="utf-8"?>
-            <resources>
-        """.trimIndent()
-        )
-        write("\n")
+
     }
 
     private fun Writer.writeFooter() {
-        write(
-            """
-            </resources>
-        """.trimIndent()
-        )
+
     }
 
-    private fun Writer.write(variable: XmlOutput) {
-        write("""    <color name="${variable.name}">${variable.value}</color>""")
+    private fun Writer.write(variable: ComposeOutput) {
+        write("""val ${variable.name} = ${variable.value}""")
         write("\n")
     }
 
-    private fun Rgba.toAndroidHex(): String {
+    private fun VariableValue.Rgba.toComposeColor(): String {
         val r = convertToChannelValue(red)
         val g = convertToChannelValue(green)
         val b = convertToChannelValue(blue)
         val a = convertAlphaValue(alpha)
-        val androidHexColor = (a shl 24) or (r shl 16) or (g shl 8) or b
-        return String.format("#%08X", androidHexColor).uppercase()
+        return """
+            Color(red = $r, green = $g, blue = $b, alpha = $a)
+        """.trimIndent()
     }
 
     private fun convertToChannelValue(double: Double): Int {

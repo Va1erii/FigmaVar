@@ -38,7 +38,6 @@ class SwiftPrimitiveNameConverter : NameConverter {
                 .split("/")
                 .last()
                 .removeSuffix("\"")
-                .lowercase()
                 .replaceFirstChar { it.uppercase() }
         )
     }
@@ -54,6 +53,32 @@ class SwiftSemanticNameConverter : NameConverter {
                 separator = "-",
                 transform = { it.lowercase().replaceFirstChar { it.uppercase() } }
             )
+        return variable.copy(
+            name = name
+        )
+    }
+}
+
+class ComposeSemanticNameConverter : NameConverter {
+    override fun convert(variable: Variable): Variable {
+        val name = variable.name
+            .replace("&", "")
+            .split(" ")
+            .joinToString(
+                separator = "",
+                transform = { it.replaceFirstChar { it.uppercase() } }
+            )
+            .split("/")
+            .joinToString(
+                separator = "",
+                transform = { it.replaceFirstChar { it.uppercase() } }
+            )
+            .split("-")
+            .joinToString(
+                separator = "",
+                transform = { it.replaceFirstChar { it.uppercase() } }
+            )
+            .replaceFirstChar { it.uppercase() }
         return variable.copy(
             name = name
         )

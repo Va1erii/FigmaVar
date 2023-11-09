@@ -2,6 +2,7 @@ import interceptor.*
 import json.JsonParser
 import json.JsonReader
 import kotlinx.coroutines.runBlocking
+import writer.ComposeWriter
 import writer.SwiftWriter
 import writer.XmlWriter
 import java.io.File
@@ -57,5 +58,25 @@ private suspend fun runSample() {
     SwiftWriter.write(
         outputDirectory = output,
         collection = swiftOutputSemantics
+    )
+
+    // Compose
+    val composeCollections = factory.create(
+        nameConverters = mapOf(
+            primitiveCollection.id to SwiftPrimitiveNameConverter(),
+            semanticCollection.id to ComposeSemanticNameConverter()
+        ),
+        primitiveCollection,
+        semanticCollection
+    )
+    val composeOutputPrimitives = requireNotNull(composeCollections.find { it.id == primitiveCollection.id })
+    val composeOutputSemantics = requireNotNull(composeCollections.find { it.id == semanticCollection.id })
+    ComposeWriter.write(
+        outputDirectory = output,
+        collection = composeOutputPrimitives
+    )
+    ComposeWriter.write(
+        outputDirectory = output,
+        collection = composeOutputSemantics
     )
 }
