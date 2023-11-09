@@ -25,7 +25,7 @@ class AliasConnector {
                                         // Has only 1 mode. So use that one
                                         VariableValue.ResolvedVariable(resolvedVariable)
                                     } else {
-                                        // Should use the same mode. Check that is has
+                                        // Should use the same mode. Check that is has the target mode
                                         resolvedVariable
                                             .valuesByMode
                                             .getValue(mode)

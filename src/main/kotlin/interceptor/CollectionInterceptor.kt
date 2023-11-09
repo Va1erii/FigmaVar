@@ -2,6 +2,9 @@ package interceptor
 
 import model.Collection
 
+/**
+ * Responsible for creating final collections, validating them, and resolving aliases.
+ */
 class OutputCollectionFactory {
     private val validator = CollectionValidator()
     private val aliasConnector = AliasConnector()
