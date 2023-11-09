@@ -1,6 +1,6 @@
 # FigmaVar
 
-Simple app for generating Xml, Swift output for colors
+Simple app for generating Xml, Swift output from Figma Variables
 
 ## Usage
 
