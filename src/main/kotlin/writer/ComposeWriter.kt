@@ -33,11 +33,15 @@ object ComposeWriter {
                         values?.let { set.addAll(it) }
                         set.add(
                             ComposeOutput(
-                                name = variable.name,
+                                name = "${valueEntry.key.name}${variable.name}",
                                 value = when (val value = valueEntry.value) {
                                     is VariableValue.Alias -> throw IllegalStateException("Variable is not resolved")
                                     is VariableValue.ResolvedVariable -> {
-                                        value.variable.name
+                                        if (value.variable.valuesByMode.size == 1) {
+                                            value.variable.name
+                                        } else {
+                                            "${valueEntry.key.name}${value.variable.name}"
+                                        }
                                     }
 
                                     is VariableValue.Rgba -> value.toComposeColor()
